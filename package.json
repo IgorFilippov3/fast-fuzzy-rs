@@ -1,0 +1,50 @@
+{
+  "name": "fast-fuzzy-rs",
+  "version": "0.1.0",
+  "description": "High-performance fuzzy string matching library powered by Rust",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "scripts": {
+    "artifacts": "napi artifacts",
+    "build": "napi build --platform --release",
+    "build:debug": "napi build --platform",
+    "prepublishOnly": "napi prepublish -t npm",
+    "test": "jest",
+    "bench": "node benches/benchmark.js",
+    "version": "napi version"
+  },
+  "napi": {
+    "name": "fast-fuzzy-rs",
+    "triples": {
+      "defaults": true,
+      "additional": [
+        "x86_64-unknown-linux-musl"
+      ]
+    }
+  },
+  "devDependencies": {
+    "@napi-rs/cli": "^2.18.0",
+    "jest": "^29.5.0"
+  },
+  "keywords": [
+    "fuzzy",
+    "string",
+    "matching",
+    "search",
+    "similarity",
+    "rust",
+    "performance"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">= 14"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yourusername/fast-fuzzy-rs.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/fast-fuzzy-rs/issues"
+  },
+  "homepage": "https://github.com/yourusername/fast-fuzzy-rs#readme"
+}
