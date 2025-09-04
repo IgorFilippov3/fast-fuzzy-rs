@@ -6,13 +6,13 @@
   "types": "index.d.ts",
   "scripts": {
     "artifacts": "napi artifacts",
+    "generate-bindings": "node scripts/generate-bindings.js",
     "build": "napi build --platform --release",
     "build:debug": "napi build --platform",
     "prepublishOnly": "napi prepublish -t npm",
     "test": "jest",
     "bench": "node benches/benchmark.js",
-    "version": "napi version",
-    "generate-bindings": "node scripts/generate-bindings.js"
+    "version": "napi version"
   },
   "napi": {
     "name": "fast-fuzzy-rs",
@@ -21,6 +21,7 @@
       "additional": [
         "x86_64-unknown-linux-gnu",
         "x86_64-apple-darwin",
+        "x86_64-pc-windows-msvc",
         "armv7-unknown-linux-gnueabihf",
         "x86_64-unknown-linux-musl",
         "aarch64-unknown-linux-gnu",
