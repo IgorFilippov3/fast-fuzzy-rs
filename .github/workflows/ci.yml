@@ -71,12 +71,6 @@ jobs:
             target: "x86_64-unknown-linux-musl"
             build: npm run build -- --target x86_64-unknown-linux-musl
 
-    name: List built files
-  run: |
-    echo "PWD=$(pwd)"
-    ls -la
-    ls -la *.node || true        
-
     name: stable - ${{ matrix.settings.target }} - node@18
     runs-on: ${{ matrix.settings.host }}
 
@@ -117,6 +111,12 @@ jobs:
       - name: "Build"
         if: ${{ !matrix.settings.docker }}
         run: ${{ matrix.settings.build }}
+
+      - name: List built files
+        run: |
+          echo "PWD=$(pwd)"
+          ls -la
+          ls -la *.node || true
 
       - name: Build in docker
         uses: addnab/docker-run-action@v3
@@ -210,6 +210,11 @@ jobs:
         with:
           name: bindings-${{ matrix.settings.target }}
           path: .
+
+      - name: Debug downloaded artifacts
+        run: |
+          echo "Downloaded artifacts for ${{ matrix.settings.target }}"
+          ls -R .
 
       - name: Generate bindings
         run: npm run generate-bindings
@@ -354,6 +359,13 @@ jobs:
       - name: List packages
         run: ls -R ./npm
         shell: bash
+
+      - name: Debug artifacts before publish
+        run: |
+          echo "== artifacts =="
+          ls -R artifacts || true
+          echo "== npm dir =="
+          ls -R ./npm || true
 
       - name: Publish
         run: |
