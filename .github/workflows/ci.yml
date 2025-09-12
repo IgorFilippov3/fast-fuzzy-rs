@@ -2,7 +2,7 @@ name: CI
 
 env:
   DEBUG: "napi:*"
-  APP_NAME: "fast_fuzzy_rs"
+  APP_NAME: "fast-fuzzy-rs"
   MACOSX_DEPLOYMENT_TARGET: "10.13"
 
 on:
@@ -71,6 +71,12 @@ jobs:
             target: "x86_64-unknown-linux-musl"
             build: npm run build -- --target x86_64-unknown-linux-musl
 
+    name: List built files
+  run: |
+    echo "PWD=$(pwd)"
+    ls -la
+    ls -la *.node || true        
+
     name: stable - ${{ matrix.settings.target }} - node@18
     runs-on: ${{ matrix.settings.host }}
 
@@ -124,7 +130,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: bindings-${{ matrix.settings.target }}
-          path: ${{ env.APP_NAME }}.*.node
+          path: "*.node"
 
   build-armv7-linux-gnueabihf:
     name: Build armv7-unknown-linux-gnueabihf
@@ -160,7 +166,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: bindings-armv7-unknown-linux-gnueabihf
-          path: ${{ env.APP_NAME }}.*.node
+          path: "*.node"
 
   test-macOS-windows-binding:
     name: Test bindings on ${{ matrix.settings.target }} - node@${{ matrix.node }}
