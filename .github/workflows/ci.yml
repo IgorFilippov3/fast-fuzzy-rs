@@ -21,7 +21,6 @@ jobs:
   lint:
     name: Lint SourceCode
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v5
 
@@ -108,7 +107,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: "Build"
+      - name: Build
         if: ${{ !matrix.settings.docker }}
         run: ${{ matrix.settings.build }}
 
@@ -140,14 +139,13 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: bindings-${{ matrix.settings.target }}
-          path: ${{ env.APP_NAME }}.*.node
+          path: "*.node" # не завязано на APP_NAME
 
   build-armv7-linux-gnueabihf:
     name: Build armv7-unknown-linux-gnueabihf
     runs-on: ubuntu-latest
-
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Setup node
         uses: actions/setup-node@v4
@@ -162,7 +160,7 @@ jobs:
       - name: Setup cross-compilation tools
         run: |
           sudo apt-get update
-          sudo apt-get install gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf -y
+          sudo apt-get install -y gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf
 
       - name: Install dependencies
         run: npm ci
@@ -176,7 +174,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: bindings-armv7-unknown-linux-gnueabihf
-          path: ${{ env.APP_NAME }}.*.node
+          path: "*.node"
 
   test-macOS-windows-binding:
     name: Test bindings on ${{ matrix.settings.target }} - node@${{ matrix.node }}
@@ -198,14 +196,14 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - name: Setup node
+      - name: Setup node (x64)
         uses: actions/setup-node@v4
         if: startsWith(matrix.settings.target, 'x86_64')
         with:
           node-version: ${{ matrix.node }}
           architecture: "x64"
 
-      - name: Setup node
+      - name: Setup node (arm64)
         uses: actions/setup-node@v4
         if: startsWith(matrix.settings.target, 'aarch64')
         with:
@@ -365,6 +363,8 @@ jobs:
     needs:
       - test-linux-x64-gnu-binding
       - test-macOS-windows-binding
+      - test-linux-x64-musl-binding
+      - test-linux-arm-gnueabihf-binding
 
     steps:
       - uses: actions/checkout@v5
@@ -382,11 +382,11 @@ jobs:
         with:
           path: artifacts
 
-      - name: Prepare npm packages (prepublish)
-        run: npm run prepublishOnly
+      - name: Create npm package dirs
+        run: npx --no-install napi create-npm-dirs
 
       - name: Move artifacts
-        run: npm run artifacts
+        run: npx --no-install napi artifacts --output-dir artifacts --npm-dir npm
 
       - name: Debug artifacts before publish (force bash)
         shell: bash
@@ -397,22 +397,20 @@ jobs:
           ls -R ./npm || true
 
       - name: List packages
-        run: ls -R ./npm
         shell: bash
+        run: ls -R ./npm
 
       - name: Publish
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
-          if git log -1 --pretty=%B | grep "^[0-9]\+\.[0-9]\+\.[0-9]\+$";
-          then
+          if git log -1 --pretty=%B | grep "^[0-9]\+\.[0-9]\+\.[0-9]\+$"; then
             echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
             npm publish --access public
-          elif git log -1 --pretty=%B | grep "^[0-9]\+\.[0-9]\+\.[0-9]\+";
-          then
+          elif git log -1 --pretty=%B | grep "^[0-9]\+\.[0-9]\+\.[0-9]\+"; then
             echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
             npm publish --tag next --access public
           else
             echo "Not a release, skipping publish"
           fi
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
