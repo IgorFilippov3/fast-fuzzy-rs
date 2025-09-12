@@ -2,7 +2,7 @@ name: CI
 
 env:
   DEBUG: "napi:*"
-  APP_NAME: "fast-fuzzy-rs"
+  APP_NAME: "fast_fuzzy_rs"
   MACOSX_DEPLOYMENT_TARGET: "10.13"
 
 on:
