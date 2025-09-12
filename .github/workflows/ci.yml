@@ -112,9 +112,11 @@ jobs:
         if: ${{ !matrix.settings.docker }}
         run: ${{ matrix.settings.build }}
 
-      - name: List built files
+      - name: List built files (force bash)
+        shell: bash
         run: |
-          echo "PWD=$(pwd)"
+          echo "*** build dir ***"
+          pwd
           ls -la
           ls -la *.node || true
 
@@ -126,11 +128,19 @@ jobs:
           options: --user 0:0 -v ${{ github.workspace }}/.cargo-cache/git/db:/usr/local/cargo/git/db -v ${{ github.workspace }}/.cargo/registry/cache:/usr/local/cargo/registry/cache -v ${{ github.workspace }}/.cargo/registry/index:/usr/local/cargo/registry/index -v ${{ github.workspace }}:/build -w /build
           run: ${{ matrix.settings.build }}
 
+      - name: List built files after docker build (force bash)
+        if: ${{ matrix.settings.docker }}
+        shell: bash
+        run: |
+          echo "*** post-docker build dir ***"
+          pwd
+          ls -la *.node || true
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: bindings-${{ matrix.settings.target }}
-          path: "*.node"
+          path: ${{ env.APP_NAME }}.*.node
 
   build-armv7-linux-gnueabihf:
     name: Build armv7-unknown-linux-gnueabihf
@@ -166,7 +176,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: bindings-armv7-unknown-linux-gnueabihf
-          path: "*.node"
+          path: ${{ env.APP_NAME }}.*.node
 
   test-macOS-windows-binding:
     name: Test bindings on ${{ matrix.settings.target }} - node@${{ matrix.node }}
@@ -211,7 +221,8 @@ jobs:
           name: bindings-${{ matrix.settings.target }}
           path: .
 
-      - name: Debug downloaded artifacts
+      - name: Debug downloaded artifacts (force bash)
+        shell: bash
         run: |
           echo "Downloaded artifacts for ${{ matrix.settings.target }}"
           ls -R .
@@ -249,6 +260,12 @@ jobs:
           name: bindings-x86_64-unknown-linux-gnu
           path: .
 
+      - name: Debug downloaded artifacts (force bash)
+        shell: bash
+        run: |
+          echo "Downloaded artifacts for linux-gnu"
+          ls -R .
+
       - name: Generate bindings
         run: npm run generate-bindings
 
@@ -282,6 +299,12 @@ jobs:
           name: bindings-x86_64-unknown-linux-musl
           path: .
 
+      - name: Debug downloaded artifacts (force bash)
+        shell: bash
+        run: |
+          echo "Downloaded artifacts for linux-musl"
+          ls -R .
+
       - name: Generate bindings
         run: npm run generate-bindings
 
@@ -306,6 +329,12 @@ jobs:
         with:
           name: bindings-armv7-unknown-linux-gnueabihf
           path: .
+
+      - name: Debug downloaded artifacts (force bash)
+        shell: bash
+        run: |
+          echo "Downloaded artifacts for armv7-gnueabihf"
+          ls -R .
 
       - name: Install dependencies
         run: npm ci
@@ -356,16 +385,17 @@ jobs:
       - name: Move artifacts
         run: npm run artifacts
 
-      - name: List packages
-        run: ls -R ./npm
+      - name: Debug artifacts before publish (force bash)
         shell: bash
-
-      - name: Debug artifacts before publish
         run: |
           echo "== artifacts =="
           ls -R artifacts || true
           echo "== npm dir =="
           ls -R ./npm || true
+
+      - name: List packages
+        run: ls -R ./npm
+        shell: bash
 
       - name: Publish
         run: |
