@@ -21,6 +21,7 @@ jobs:
   lint:
     name: Lint SourceCode
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v5
 
@@ -144,8 +145,9 @@ jobs:
   build-armv7-linux-gnueabihf:
     name: Build armv7-unknown-linux-gnueabihf
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v4
 
       - name: Setup node
         uses: actions/setup-node@v4
@@ -382,8 +384,16 @@ jobs:
         with:
           path: artifacts
 
-      - name: Create npm package dirs
-        run: npx --no-install napi create-npm-dirs
+      - name: Prepare npm packages (prepublish)
+        run: npm run prepublishOnly
+
+      - name: Ensure npm target dirs exist (robust)
+        shell: bash
+        run: |
+          set -e
+          for d in darwin-x64 darwin-arm64 win32-x64-msvc linux-x64-gnu linux-x64-musl linux-arm-gnueabihf; do
+            mkdir -p "npm/$d"
+          done
 
       - name: Move artifacts
         run: npx --no-install napi artifacts --output-dir artifacts --npm-dir npm
