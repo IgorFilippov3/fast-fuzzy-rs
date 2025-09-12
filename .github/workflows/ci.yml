@@ -382,6 +382,9 @@ jobs:
         with:
           path: artifacts
 
+      - name: Prepare npm packages (prepublish)
+        run: npm run prepublishOnly
+
       - name: Move artifacts
         run: npm run artifacts
 
