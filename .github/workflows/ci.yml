@@ -370,15 +370,12 @@ jobs:
 
     steps:
       - uses: actions/checkout@v5
-
       - name: Setup node
         uses: actions/setup-node@v4
         with:
           node-version: 18
-
       - name: Install dependencies
         run: npm ci
-
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
@@ -387,22 +384,22 @@ jobs:
       - name: Prepare npm packages (prepublish)
         run: npm run prepublishOnly
 
-      - name: Ensure npm target dirs exist (robust)
+      - name: Sanity check downloaded artifacts
         shell: bash
         run: |
-          set -e
-          for d in darwin-x64 darwin-arm64 win32-x64-msvc linux-x64-gnu linux-x64-musl linux-arm-gnueabihf; do
-            mkdir -p "npm/$d"
+          echo "== artifacts root =="
+          ls -la artifacts || true
+          for d in artifacts/*; do
+            echo ">> $d"
+            ls -la "$d" || true
           done
 
       - name: Move artifacts
-        run: npx --no-install napi artifacts --output-dir artifacts --npm-dir npm
+        run: npx --no-install napi artifacts -d artifacts --dist npm
 
-      - name: Debug artifacts before publish (force bash)
+      - name: Debug artifacts before publish
         shell: bash
         run: |
-          echo "== artifacts =="
-          ls -R artifacts || true
           echo "== npm dir =="
           ls -R ./npm || true
 
